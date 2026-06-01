@@ -204,11 +204,11 @@ const SignupView = () => {
             {/* Name row */}
             <div className="grid grid-cols-2 gap-3">
               <FieldWrapper num="01" label="First Name">
-                <input type="text" name="firstName" placeholder="Sung"
+                <input type="text" name="firstName" placeholder="Player Name"
                   value={formData.firstName} onChange={handleChange} required className={fieldClass} />
               </FieldWrapper>
               <FieldWrapper num="02" label="Last Name">
-                <input type="text" name="lastName" placeholder="Jin-Woo"
+                <input type="text" name="lastName" placeholder="Player Last Name"
                   value={formData.lastName} onChange={handleChange} required className={fieldClass} />
               </FieldWrapper>
             </div>
@@ -216,7 +216,7 @@ const SignupView = () => {
             {/* Email + Password row */}
             <div className="grid grid-cols-2 gap-3">
               <FieldWrapper num="03" label="Hunter ID (Email)">
-                <input type="email" name="email" placeholder="hunter@caltrack.io"
+                <input type="email" name="email" placeholder="hunter@gmail.com"
                   value={formData.email} onChange={handleChange} required className={fieldClass} />
               </FieldWrapper>
               <FieldWrapper num="04" label="Access Key">
