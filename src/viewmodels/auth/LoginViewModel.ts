@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { login } from "../../services/authService";
 import type { LoginRequest } from "../../models/User";
 
 export const useLoginViewModel = () => {
@@ -10,9 +11,7 @@ export const useLoginViewModel = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     setFormData((prev) => ({
@@ -21,20 +20,23 @@ export const useLoginViewModel = () => {
     }));
   };
 
-  const handleLogin = async () => {
+  const handleLogin = async (): Promise<boolean> => {
     try {
       setLoading(true);
       setError("");
 
-      // Backend integration later
-      console.log("Login Data:", formData);
+      const res = await login(formData);
 
-      // Example:
-      // const response = await login(formData);
+      console.log("LOGIN SUCCESS:", res);
 
-    } catch (err) {
-      setError("Login failed.");
-      console.error(err);
+      if (res.token) {
+        localStorage.setItem("token", res.token);
+      }
+
+      return true;
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Login failed.");
+      return false;
     } finally {
       setLoading(false);
     }

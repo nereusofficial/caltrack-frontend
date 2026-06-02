@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { signup } from "../../services/authService";
 import type { SignupRequest } from "../../models/User";
 
 export const useSignupViewModel = () => {
@@ -17,9 +18,7 @@ export const useSignupViewModel = () => {
   const [error, setError] = useState("");
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
 
@@ -34,20 +33,24 @@ export const useSignupViewModel = () => {
     }));
   };
 
-  const handleSignup = async () => {
+  const handleSignup = async (): Promise<boolean> => {
     try {
       setLoading(true);
       setError("");
 
-      // Backend integration later
-      console.log("Signup Data:", formData);
+      const res = await signup(formData);
 
-      // Example:
-      // const response = await signup(formData);
+      console.log("SIGNUP SUCCESS:", res);
 
-    } catch (err) {
-      setError("Signup failed.");
-      console.error(err);
+      // Optional: store token if backend returns one
+      if (res.token) {
+        localStorage.setItem("token", res.token);
+      }
+
+      return true;
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Signup failed.");
+      return false;
     } finally {
       setLoading(false);
     }
