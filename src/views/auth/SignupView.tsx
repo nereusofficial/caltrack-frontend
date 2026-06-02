@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
 import { useSignupViewModel } from "../../viewmodels/auth/SignupViewModel";
 
 const fieldClass =
@@ -41,10 +42,37 @@ const SignupView = () => {
   const { formData, loading, error, handleChange, handleSignup } =
     useSignupViewModel();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const navigate = useNavigate();
+
+  const [successStage, setSuccessStage] = useState<"idle" | "created" | "redirecting">("idle");
+  const [createdVisible, setCreatedVisible] = useState(false);
+  const [countdown, setCountdown] = useState(3);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await handleSignup();
+
+    // 1. Show green "Account Created" notification
+    setSuccessStage("created");
+    setCreatedVisible(true);
+
+    // 2. After 2s, fade it out
+    setTimeout(() => setCreatedVisible(false), 2000);
+
+    // 3. After 2.8s, show "Redirecting" notification and start countdown
+    setTimeout(() => {
+      setSuccessStage("redirecting");
+      setCountdown(3);
+      let current = 3;
+      const interval = setInterval(() => {
+        current -= 1;
+        setCountdown(current);
+        if (current <= 0) {
+          clearInterval(interval);
+          navigate("/login");
+        }
+      }, 1000);
+    }, 2800);
   };
 
   useEffect(() => {
@@ -176,7 +204,71 @@ const SignupView = () => {
         <div className="relative overflow-hidden px-8 py-6"
           style={{ background: "linear-gradient(180deg, rgba(1,18,38,0.95) 0%, rgba(1,12,28,0.98) 100%)", backdropFilter: "blur(24px)" }}>
 
-          {/* Title */}
+          {/* Success Notifications */}
+          {(successStage === "created" || successStage === "redirecting") && (
+            <div
+              className="mb-4 border border-[rgba(0,255,150,0.4)] px-4 py-3"
+              style={{
+                background: "rgba(0,180,80,0.08)",
+                opacity: createdVisible ? 1 : 0,
+                transform: createdVisible ? "translateY(0)" : "translateY(-6px)",
+                transition: "opacity 0.5s ease, transform 0.5s ease",
+                pointerEvents: "none",
+                // Keep in DOM so height doesn't collapse abruptly
+                maxHeight: createdVisible ? "80px" : "0px",
+                marginBottom: createdVisible ? undefined : "0",
+                overflow: "hidden",
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 border-[rgba(0,255,150,0.7)] font-mono text-sm text-[#00ff96]"
+                  style={{ boxShadow: "0 0 10px rgba(0,255,150,0.3)" }}>
+                  ✓
+                </div>
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#00ff96]">Account Created</p>
+                  <p className="font-mono text-[9px] tracking-[0.15em] text-[rgba(0,255,150,0.5)]">Hunter profile successfully registered</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {successStage === "redirecting" && (
+            <>
+              <div style={{ height: 0 }} />
+              <div className="mb-4 border border-[rgba(0,180,255,0.35)] px-4 py-3 animate-[fadeIn_0.4s_ease-out]"
+                style={{ background: "rgba(0,100,200,0.1)" }}>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-7 w-7 flex-shrink-0 animate-pulse items-center justify-center rounded-full border-2 border-[rgba(0,180,255,0.7)] font-mono text-sm text-[#00c8ff]"
+                    style={{ boxShadow: "0 0 10px rgba(0,180,255,0.3)" }}>
+                    ⟳
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#5ce8ff]">Redirecting to Gate</p>
+                    <p className="font-mono text-[9px] tracking-[0.15em] text-[rgba(0,180,255,0.5)]">
+                      Returning to login in{" "}
+                      <span className="text-[#00c8ff]" style={{ textShadow: "0 0 8px rgba(0,200,255,0.6)" }}>
+                        {countdown}s
+                      </span>
+                    </p>
+                  </div>
+                  {/* Countdown ring */}
+                  <svg width="32" height="32" viewBox="0 0 32 32" className="flex-shrink-0">
+                    <circle cx="16" cy="16" r="13" fill="none" stroke="rgba(0,120,200,0.2)" strokeWidth="2" />
+                    <circle cx="16" cy="16" r="13" fill="none" stroke="#00c8ff" strokeWidth="2"
+                      strokeDasharray={`${(countdown / 3) * 81.7} 81.7`}
+                      strokeLinecap="round"
+                      transform="rotate(-90 16 16)"
+                      style={{ filter: "drop-shadow(0 0 4px rgba(0,200,255,0.6))", transition: "stroke-dasharray 0.9s linear" }}
+                    />
+                    <text x="16" y="20" textAnchor="middle" fill="#00c8ff" fontSize="10" fontFamily="monospace">{countdown}</text>
+                  </svg>
+                </div>
+              </div>
+            </>
+          )}
+
+
           <div className="mb-0.5 text-center font-mono text-[8px] tracking-[0.35em] text-[rgba(0,180,255,0.35)]">
             SYSTEM ID: CAL-9821-X // HUNTER ENROLLMENT
           </div>
@@ -204,11 +296,11 @@ const SignupView = () => {
             {/* Name row */}
             <div className="grid grid-cols-2 gap-3">
               <FieldWrapper num="01" label="First Name">
-                <input type="text" name="firstName" placeholder="Player Name"
+                <input type="text" name="firstName" placeholder="Sung"
                   value={formData.firstName} onChange={handleChange} required className={fieldClass} />
               </FieldWrapper>
               <FieldWrapper num="02" label="Last Name">
-                <input type="text" name="lastName" placeholder="Player Last Name"
+                <input type="text" name="lastName" placeholder="Jin-Woo"
                   value={formData.lastName} onChange={handleChange} required className={fieldClass} />
               </FieldWrapper>
             </div>
@@ -216,7 +308,7 @@ const SignupView = () => {
             {/* Email + Password row */}
             <div className="grid grid-cols-2 gap-3">
               <FieldWrapper num="03" label="Hunter ID (Email)">
-                <input type="email" name="email" placeholder="hunter@gmail.com"
+                <input type="email" name="email" placeholder="hunter@caltrack.io"
                   value={formData.email} onChange={handleChange} required className={fieldClass} />
               </FieldWrapper>
               <FieldWrapper num="04" label="Access Key">
@@ -303,6 +395,10 @@ const SignupView = () => {
         @keyframes sweep {
           0% { transform: translateX(-100%); }
           100% { transform: translateX(200%); }
+        }
+        @keyframes fadeIn {
+          0% { opacity: 0; transform: translateY(-6px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>
