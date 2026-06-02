@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-
 import LoginView from "../views/auth/LoginView";
 import SignupView from "../views/auth/SignupView";
+import ForgotPasswordView from "../views/auth/ForgotPasswordView";
 
 const AppRoutes = () => {
   return (
@@ -11,6 +11,7 @@ const AppRoutes = () => {
 
         <Route path="/login" element={<LoginView />} />
         <Route path="/signup" element={<SignupView />} />
+        <Route path="/forgot-password" element={<ForgotPasswordView />} />
 
         <Route
           path="*"
