@@ -50,9 +50,12 @@ const SignupView = () => {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await handleSignup();
+    const success = await handleSignup();
 
-    // 1. Show green "Account Created" notification
+    if (!success) {
+      return;
+    }
+
     setSuccessStage("created");
     setCreatedVisible(true);
 
@@ -226,8 +229,8 @@ const SignupView = () => {
                   ✓
                 </div>
                 <div>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#00ff96]">Account Created</p>
-                  <p className="font-mono text-[9px] tracking-[0.15em] text-[rgba(0,255,150,0.5)]">Hunter profile successfully registered</p>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#00ff96]">Account Created Successfully</p>
+                  <p className="font-mono text-[9px] tracking-[0.15em] text-[rgba(0,255,150,0.5)]">A verification link has been sent to your email</p>
                 </div>
               </div>
             </div>
