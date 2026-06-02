@@ -44,38 +44,45 @@ const SignupView = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const navigate = useNavigate();
 
-  const [successStage, setSuccessStage] = useState<"idle" | "created" | "redirecting">("idle");
-  const [createdVisible, setCreatedVisible] = useState(false);
+  const [notifStage, setNotifStage] =
+  useState<"idle" | "sent" | "redirecting">("idle");
+
+  const [visible, setVisible] = useState(false);
   const [countdown, setCountdown] = useState(3);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const success = await handleSignup();
+    if (!success) return;
 
-    if (!success) {
-      return;
-    }
+    // show first notif
+    setNotifStage("sent");
+    setVisible(true);
 
-    setSuccessStage("created");
-    setCreatedVisible(true);
-
-    // 2. After 2s, fade it out
-    setTimeout(() => setCreatedVisible(false), 2000);
-
-    // 3. After 2.8s, show "Redirecting" notification and start countdown
+    // fade out email sent
     setTimeout(() => {
-      setSuccessStage("redirecting");
-      setCountdown(3);
-      let current = 3;
-      const interval = setInterval(() => {
-        current -= 1;
-        setCountdown(current);
-        if (current <= 0) {
-          clearInterval(interval);
-          navigate("/login");
-        }
-      }, 1000);
-    }, 2800);
+      setVisible(false);
+
+      // swap AFTER fade out
+      setTimeout(() => {
+        setNotifStage("redirecting");
+        setVisible(true);
+
+        setCountdown(3);
+        let current = 3;
+
+        const interval = setInterval(() => {
+          current -= 1;
+          setCountdown(current);
+
+          if (current <= 0) {
+            clearInterval(interval);
+            navigate("/login");
+          }
+        }, 1000);
+      }, 400); // fade duration match
+    }, 3000);
   };
 
   useEffect(() => {
@@ -208,69 +215,88 @@ const SignupView = () => {
           style={{ background: "linear-gradient(180deg, rgba(1,18,38,0.95) 0%, rgba(1,12,28,0.98) 100%)", backdropFilter: "blur(24px)" }}>
 
           {/* Success Notifications */}
-          {(successStage === "created" || successStage === "redirecting") && (
+          {notifStage !== "idle" && (
             <div
-              className="mb-4 border border-[rgba(0,255,150,0.4)] px-4 py-3"
+              className="mb-4 border px-4 py-3"
               style={{
-                background: "rgba(0,180,80,0.08)",
-                opacity: createdVisible ? 1 : 0,
-                transform: createdVisible ? "translateY(0)" : "translateY(-6px)",
-                transition: "opacity 0.5s ease, transform 0.5s ease",
-                pointerEvents: "none",
-                // Keep in DOM so height doesn't collapse abruptly
-                maxHeight: createdVisible ? "80px" : "0px",
-                marginBottom: createdVisible ? undefined : "0",
-                overflow: "hidden",
+                background:
+                  notifStage === "sent"
+                    ? "rgba(0,180,80,0.08)"
+                    : "rgba(0,100,200,0.1)",
+                borderColor:
+                  notifStage === "sent"
+                    ? "rgba(0,255,150,0.4)"
+                    : "rgba(0,180,255,0.35)",
+
+                opacity: visible ? 1 : 0,
+                transform: visible ? "translateY(0)" : "translateY(-8px)",
+                transition: "opacity 0.4s ease, transform 0.4s ease",
               }}
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 border-[rgba(0,255,150,0.7)] font-mono text-sm text-[#00ff96]"
-                  style={{ boxShadow: "0 0 10px rgba(0,255,150,0.3)" }}>
-                  ✓
-                </div>
-                <div>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#00ff96]">Account Created Successfully</p>
-                  <p className="font-mono text-[9px] tracking-[0.15em] text-[rgba(0,255,150,0.5)]">A verification link has been sent to your email</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {successStage === "redirecting" && (
-            <>
-              <div style={{ height: 0 }} />
-              <div className="mb-4 border border-[rgba(0,180,255,0.35)] px-4 py-3 animate-[fadeIn_0.4s_ease-out]"
-                style={{ background: "rgba(0,100,200,0.1)" }}>
+              {notifStage === "sent" ? (
                 <div className="flex items-center gap-3">
-                  <div className="flex h-7 w-7 flex-shrink-0 animate-pulse items-center justify-center rounded-full border-2 border-[rgba(0,180,255,0.7)] font-mono text-sm text-[#00c8ff]"
-                    style={{ boxShadow: "0 0 10px rgba(0,180,255,0.3)" }}>
-                    ⟳
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[rgba(0,255,150,0.7)] text-[#00ff96]">
+                    ✓
                   </div>
-                  <div className="flex-1">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#5ce8ff]">Redirecting to Gate</p>
-                    <p className="font-mono text-[9px] tracking-[0.15em] text-[rgba(0,180,255,0.5)]">
-                      Returning to login in{" "}
-                      <span className="text-[#00c8ff]" style={{ textShadow: "0 0 8px rgba(0,200,255,0.6)" }}>
-                        {countdown}s
-                      </span>
+
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#00ff96]">
+                      Verification Email Sent
+                    </p>
+                    <p className="font-mono text-[9px] text-[rgba(0,255,150,0.6)]">
+                      Check your inbox and click the verification link.
                     </p>
                   </div>
-                  {/* Countdown ring */}
-                  <svg width="32" height="32" viewBox="0 0 32 32" className="flex-shrink-0">
-                    <circle cx="16" cy="16" r="13" fill="none" stroke="rgba(0,120,200,0.2)" strokeWidth="2" />
-                    <circle cx="16" cy="16" r="13" fill="none" stroke="#00c8ff" strokeWidth="2"
-                      strokeDasharray={`${(countdown / 3) * 81.7} 81.7`}
-                      strokeLinecap="round"
-                      transform="rotate(-90 16 16)"
-                      style={{ filter: "drop-shadow(0 0 4px rgba(0,200,255,0.6))", transition: "stroke-dasharray 0.9s linear" }}
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-7 w-7 animate-pulse items-center justify-center rounded-full border-2 border-[rgba(0,180,255,0.7)] text-[#00c8ff]">
+                    ⟳
+                  </div>
+
+                  <div className="flex-1">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#5ce8ff]">
+                      Redirecting to Gate
+                    </p>
+                    <p className="font-mono text-[9px] text-[rgba(0,180,255,0.5)]">
+                      Returning to login in{" "}
+                      <span className="text-[#00c8ff]">{countdown}s</span>
+                    </p>
+                  </div>
+
+                  <svg width="32" height="32" viewBox="0 0 32 32">
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="13"
+                      fill="none"
+                      stroke="rgba(0,120,200,0.2)"
+                      strokeWidth="2"
                     />
-                    <text x="16" y="20" textAnchor="middle" fill="#00c8ff" fontSize="10" fontFamily="monospace">{countdown}</text>
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="13"
+                      fill="none"
+                      stroke="#00c8ff"
+                      strokeWidth="2"
+                      strokeDasharray={`${(countdown / 3) * 81.7} 81.7`}
+                      transform="rotate(-90 16 16)"
+                    />
+                    <text
+                      x="16"
+                      y="20"
+                      textAnchor="middle"
+                      fill="#00c8ff"
+                      fontSize="10"
+                    >
+                      {countdown}
+                    </text>
                   </svg>
                 </div>
-              </div>
-            </>
+              )}
+            </div>
           )}
-
 
           <div className="mb-0.5 text-center font-mono text-[8px] tracking-[0.35em] text-[rgba(0,180,255,0.35)]">
             SYSTEM ID: CAL-9821-X // HUNTER ENROLLMENT

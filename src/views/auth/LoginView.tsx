@@ -9,44 +9,46 @@ const LoginView = () => {
   const passStatusRef = useRef<HTMLSpanElement>(null);
   const navigate = useNavigate();
 
-  const [successStage, setSuccessStage] = useState<"idle" | "authenticated" | "redirecting">("idle");
-  const [authVisible, setAuthVisible] = useState(false);
+  const [notifStage, setNotifStage] =
+  useState<"idle" | "auth" | "redirecting">("idle");
+
+  const [visible, setVisible] = useState(false);
   const [countdown, setCountdown] = useState(3);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const success = await handleLogin();
-
     if (!success) return;
 
-    // Show authenticated notification
-    setSuccessStage("authenticated");
-    setAuthVisible(true);
+    // STEP 1: show auth notif
+    setNotifStage("auth");
+    setVisible(true);
 
-    // Hide authenticated notification after 2 seconds
+    // fade out auth notif
     setTimeout(() => {
-      setAuthVisible(false);
+      setVisible(false);
+
+      // STEP 2: swap to redirecting AFTER fade out
+      setTimeout(() => {
+        setNotifStage("redirecting");
+        setVisible(true);
+
+        setCountdown(3);
+        let current = 3;
+
+        const interval = setInterval(() => {
+          current--;
+
+          if (current <= 0) {
+            clearInterval(interval);
+            navigate("/dashboard");
+          } else {
+            setCountdown(current);
+          }
+        }, 1000);
+      }, 400); // match fade duration
     }, 2000);
-
-    // Show redirect notification after authenticated message
-    setTimeout(() => {
-      setSuccessStage("redirecting");
-      setCountdown(3);
-
-      let current = 3;
-
-      const interval = setInterval(() => {
-        current--;
-
-        if (current <= 0) {
-          clearInterval(interval);
-          navigate("/dashboard");
-        } else {
-          setCountdown(current);
-        }
-      }, 1000);
-    }, 2500);
   };
 
   useEffect(() => {
@@ -192,62 +194,87 @@ const LoginView = () => {
           style={{ background: "linear-gradient(180deg, rgba(1,18,38,0.95) 0%, rgba(1,12,28,0.98) 100%)", backdropFilter: "blur(24px)" }}>
 
           {/* Success Notifications */}
-          {(successStage === "authenticated" || successStage === "redirecting") && (
+          {notifStage !== "idle" && (
             <div
-              className="mb-4 border border-[rgba(0,255,150,0.4)] px-4 py-3"
+              className="mb-4 border px-4 py-3"
               style={{
-                background: "rgba(0,180,80,0.08)",
-                opacity: authVisible ? 1 : 0,
-                transform: authVisible ? "translateY(0)" : "translateY(-6px)",
-                transition: "opacity 0.5s ease, transform 0.5s ease",
-                pointerEvents: "none",
-                maxHeight: authVisible ? "80px" : "0px",
-                marginBottom: authVisible ? undefined : "0",
-                overflow: "hidden",
+                background:
+                  notifStage === "auth"
+                    ? "rgba(0,180,80,0.08)"
+                    : "rgba(0,100,200,0.1)",
+
+                borderColor:
+                  notifStage === "auth"
+                    ? "rgba(0,255,150,0.4)"
+                    : "rgba(0,180,255,0.35)",
+
+                opacity: visible ? 1 : 0,
+                transform: visible ? "translateY(0)" : "translateY(-8px)",
+                transition: "opacity 0.4s ease, transform 0.4s ease",
               }}
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 border-[rgba(0,255,150,0.7)] font-mono text-sm text-[#00ff96]"
-                  style={{ boxShadow: "0 0 10px rgba(0,255,150,0.3)" }}>
-                  ✓
-                </div>
-                <div>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#00ff96]">Authentication Successful</p>
-                  <p className="font-mono text-[9px] tracking-[0.15em] text-[rgba(0,255,150,0.5)]">Identity verified — access granted</p>
-                </div>
-              </div>
-            </div>
-          )}
+              {notifStage === "auth" ? (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[rgba(0,255,150,0.7)] text-[#00ff96]">
+                    ✓
+                  </div>
 
-          {successStage === "redirecting" && (
-            <div className="mb-4 border border-[rgba(0,180,255,0.35)] px-4 py-3"
-              style={{ background: "rgba(0,100,200,0.1)", animation: "fadeIn 0.4s ease-out" }}>
-              <div className="flex items-center gap-3">
-                <div className="flex h-7 w-7 flex-shrink-0 animate-pulse items-center justify-center rounded-full border-2 border-[rgba(0,180,255,0.7)] font-mono text-sm text-[#00c8ff]"
-                  style={{ boxShadow: "0 0 10px rgba(0,180,255,0.3)" }}>
-                  ⟳
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#00ff96]">
+                      Authentication Successful
+                    </p>
+                    <p className="font-mono text-[9px] text-[rgba(0,255,150,0.5)]">
+                      Identity verified — access granted
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#5ce8ff]">Entering the System</p>
-                  <p className="font-mono text-[9px] tracking-[0.15em] text-[rgba(0,180,255,0.5)]">
-                    Loading dashboard in{" "}
-                    <span className="text-[#00c8ff]" style={{ textShadow: "0 0 8px rgba(0,200,255,0.6)" }}>
-                      {countdown}s
-                    </span>
-                  </p>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-7 w-7 animate-pulse items-center justify-center rounded-full border-2 border-[rgba(0,180,255,0.7)] text-[#00c8ff]">
+                    ⟳
+                  </div>
+
+                  <div className="flex-1">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#5ce8ff]">
+                      Entering the System
+                    </p>
+                    <p className="font-mono text-[9px] text-[rgba(0,180,255,0.5)]">
+                      Loading dashboard in{" "}
+                      <span className="text-[#00c8ff]">{countdown}s</span>
+                    </p>
+                  </div>
+
+                  <svg width="32" height="32" viewBox="0 0 32 32">
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="13"
+                      fill="none"
+                      stroke="rgba(0,120,200,0.2)"
+                      strokeWidth="2"
+                    />
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="13"
+                      fill="none"
+                      stroke="#00c8ff"
+                      strokeWidth="2"
+                      strokeDasharray={`${(countdown / 3) * 81.7} 81.7`}
+                      transform="rotate(-90 16 16)"
+                    />
+                    <text
+                      x="16"
+                      y="20"
+                      textAnchor="middle"
+                      fill="#00c8ff"
+                      fontSize="10"
+                    >
+                      {countdown}
+                    </text>
+                  </svg>
                 </div>
-                {/* Countdown ring */}
-                <svg width="32" height="32" viewBox="0 0 32 32" className="flex-shrink-0">
-                  <circle cx="16" cy="16" r="13" fill="none" stroke="rgba(0,120,200,0.2)" strokeWidth="2" />
-                  <circle cx="16" cy="16" r="13" fill="none" stroke="#00c8ff" strokeWidth="2"
-                    strokeDasharray={`${(countdown / 3) * 81.7} 81.7`}
-                    strokeLinecap="round"
-                    transform="rotate(-90 16 16)"
-                    style={{ filter: "drop-shadow(0 0 4px rgba(0,200,255,0.6))", transition: "stroke-dasharray 0.9s linear" }}
-                  />
-                  <text x="16" y="20" textAnchor="middle" fill="#00c8ff" fontSize="10" fontFamily="monospace">{countdown}</text>
-                </svg>
-              </div>
+              )}
             </div>
           )}
 
@@ -371,7 +398,7 @@ const LoginView = () => {
             {/* Submit button */}
             <button
               type="submit"
-              disabled={loading || successStage !== "idle"}
+              disabled={loading || notifStage !== "idle"}
               className="group relative w-full overflow-hidden border border-[rgba(0,200,255,0.5)] py-4 font-mono text-[0.7rem] uppercase tracking-[0.5em] text-[#7dd8ff] transition-all duration-300 hover:border-[rgba(0,220,255,0.8)] hover:text-[#c8f4ff] disabled:cursor-not-allowed disabled:opacity-40"
               style={{ background: "linear-gradient(180deg, rgba(0,100,200,0.15), rgba(0,60,140,0.1))" }}
             >
