@@ -3,6 +3,7 @@ import LoginView from "../views/auth/LoginView";
 import SignupView from "../views/auth/SignupView";
 import ForgotPasswordView from "../views/auth/ForgotPasswordView";
 import VerifySuccess from "../views/auth/VerifySuccess";
+import DashboardView from "../views/auth/DashboardView";
 
 const AppRoutes = () => {
   return (
@@ -14,6 +15,7 @@ const AppRoutes = () => {
         <Route path="/signup" element={<SignupView />} />
         <Route path="/forgot-password" element={<ForgotPasswordView />} />
         <Route path="/verify-success" element={<VerifySuccess />} />
+        <Route path="/dashboard" element={<DashboardView />} />
 
         <Route
           path="*"
