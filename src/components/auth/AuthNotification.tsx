@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-type NotifStage = "idle" | "auth" | "sent" | "redirecting";
+type NotifStage = "idle" | "auth" | "sent" | "redirecting" | "closing";
 
 interface AuthNotificationProps {
   stage: NotifStage;
@@ -15,7 +15,6 @@ const AuthNotification = ({ stage, visible, countdown }: AuthNotificationProps) 
     if (stage !== "idle") {
       setMounted(true);
     } else {
-      // Unmount after fade-out completes
       const t = setTimeout(() => setMounted(false), 400);
       return () => clearTimeout(t);
     }
@@ -44,9 +43,12 @@ const AuthNotification = ({ stage, visible, countdown }: AuthNotificationProps) 
         }}
       >
         {isSuccess ? (
+          /* ── Green: auth / sent ── */
           <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 border-[rgba(0,255,150,0.7)] font-mono text-sm text-[#00ff96]"
-              style={{ boxShadow: "0 0 10px rgba(0,255,150,0.3)" }}>
+            <div
+              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 border-[rgba(0,255,150,0.7)] font-mono text-sm text-[#00ff96]"
+              style={{ boxShadow: "0 0 10px rgba(0,255,150,0.3)" }}
+            >
               ✓
             </div>
             <div>
@@ -58,10 +60,13 @@ const AuthNotification = ({ stage, visible, countdown }: AuthNotificationProps) 
               </p>
             </div>
           </div>
-        ) : (
+        ) : stage === "redirecting" ? (
+          /* ── Blue: redirecting ── */
           <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 flex-shrink-0 animate-pulse items-center justify-center rounded-full border-2 border-[rgba(0,180,255,0.7)] font-mono text-sm text-[#00c8ff]"
-              style={{ boxShadow: "0 0 10px rgba(0,180,255,0.3)" }}>
+            <div
+              className="flex h-7 w-7 flex-shrink-0 animate-pulse items-center justify-center rounded-full border-2 border-[rgba(0,180,255,0.7)] font-mono text-sm text-[#00c8ff]"
+              style={{ boxShadow: "0 0 10px rgba(0,180,255,0.3)" }}
+            >
               ⟳
             </div>
             <div className="flex-1">
@@ -77,7 +82,44 @@ const AuthNotification = ({ stage, visible, countdown }: AuthNotificationProps) 
             </div>
             <svg width="32" height="32" viewBox="0 0 32 32" className="flex-shrink-0">
               <circle cx="16" cy="16" r="13" fill="none" stroke="rgba(0,120,200,0.2)" strokeWidth="2" />
-              <circle cx="16" cy="16" r="13" fill="none" stroke="#00c8ff" strokeWidth="2"
+              <circle
+                cx="16" cy="16" r="13"
+                fill="none" stroke="#00c8ff" strokeWidth="2"
+                strokeDasharray={`${(countdown / 3) * 81.7} 81.7`}
+                strokeLinecap="round"
+                transform="rotate(-90 16 16)"
+                style={{ filter: "drop-shadow(0 0 4px rgba(0,200,255,0.6))", transition: "stroke-dasharray 0.9s linear" }}
+              />
+              <text x="16" y="20" textAnchor="middle" fill="#00c8ff" fontSize="10" fontFamily="monospace">
+                {countdown}
+              </text>
+            </svg>
+          </div>
+        ) : (
+          /* ── Blue: closing ── */
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-7 w-7 flex-shrink-0 animate-pulse items-center justify-center rounded-full border-2 border-[rgba(0,180,255,0.7)] font-mono text-sm text-[#00c8ff]"
+              style={{ boxShadow: "0 0 10px rgba(0,180,255,0.3)" }}
+            >
+              ✕
+            </div>
+            <div className="flex-1">
+              <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#5ce8ff]">
+                Session Terminating
+              </p>
+              <p className="font-mono text-[9px] text-[rgba(0,180,255,0.5)]">
+                Page closing in{" "}
+                <span className="text-[#00c8ff]" style={{ textShadow: "0 0 8px rgba(0,200,255,0.6)" }}>
+                  {countdown}s
+                </span>
+              </p>
+            </div>
+            <svg width="32" height="32" viewBox="0 0 32 32" className="flex-shrink-0">
+              <circle cx="16" cy="16" r="13" fill="none" stroke="rgba(0,120,200,0.2)" strokeWidth="2" />
+              <circle
+                cx="16" cy="16" r="13"
+                fill="none" stroke="#00c8ff" strokeWidth="2"
                 strokeDasharray={`${(countdown / 3) * 81.7} 81.7`}
                 strokeLinecap="round"
                 transform="rotate(-90 16 16)"

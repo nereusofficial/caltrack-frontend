@@ -20,10 +20,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => (
 
     <div className="relative z-10 flex flex-1 flex-col min-w-0">
       <DashboardHeader />
-      <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(0,180,255,0.15) transparent" }}>
-        <div className="px-8 py-6 space-y-5">
-          {children}
-        </div>
+      <main className="flex-1 overflow-hidden px-8 py-6">
+        {children}
       </main>
       <DashboardFooter />
     </div>
