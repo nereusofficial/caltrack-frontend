@@ -41,3 +41,29 @@ export const getProfile = async (
 
   return response.data;
 };
+
+export const forgotPassword = async (
+  email: string
+): Promise<AuthResponse> => {
+  const response = await axios.post<AuthResponse>(
+    `${API_URL}/auth/forgot-password`,
+    { email }
+  );
+
+  return response.data;
+};
+
+export const resetPassword = async (
+  token: string,
+  password: string
+): Promise<AuthResponse> => {
+  const response = await axios.post<AuthResponse>(
+    `${API_URL}/auth/reset-password`,
+    {
+      token,
+      password,
+    }
+  );
+
+  return response.data;
+};

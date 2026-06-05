@@ -2,8 +2,9 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import LoginView from "../views/auth/LoginView";
 import SignupView from "../views/auth/SignupView";
 import ForgotPasswordView from "../views/auth/ForgotPasswordView";
-import VerifySuccess from "../views/auth/VerifySuccess";
+import VerifySuccessView from "../views/auth/VerifySuccessView";
 import DashboardView from "../views/auth/DashboardView";
+import ResetPasswordView from "../views/auth/ResetPasswordView";
 
 const AppRoutes = () => {
   return (
@@ -14,7 +15,8 @@ const AppRoutes = () => {
         <Route path="/login" element={<LoginView />} />
         <Route path="/signup" element={<SignupView />} />
         <Route path="/forgot-password" element={<ForgotPasswordView />} />
-        <Route path="/verify-success" element={<VerifySuccess />} />
+        <Route path="/reset-password" element={<ResetPasswordView />} />
+        <Route path="/verify-success" element={<VerifySuccessView />} />
         <Route path="/dashboard" element={<DashboardView />} />
 
         <Route

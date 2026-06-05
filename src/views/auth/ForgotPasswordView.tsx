@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useForgotPasswordViewModel } from "../../viewmodels/auth/ForgotPasswordViewModel";
 
 import AuthCanvas from "../../components/auth/AuthCanvas";
 import AuthPanel from "../../components/auth/AuthPanel";
+import AuthNotification from "../../components/auth/AuthNotification";
 import AuthField from "../../components/auth/AuthField";
 import AuthDivider from "../../components/auth/AuthDivider";
 import AuthChevrons from "../../components/auth/AuthChevrons";
@@ -10,20 +12,39 @@ import AuthStyles, { inputClass } from "../../components/auth/AuthStyles";
 
 const ForgotPasswordView = () => {
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [sentVisible, setSentVisible] = useState(false);
-  const [sentMounted, setSentMounted] = useState(false);
+  const { loading, sendResetLink } = useForgotPasswordViewModel();
+  const navigate = useNavigate();
+
+  const [notifStage, setNotifStage] = useState<"idle" | "sent" | "redirecting">("idle");
+  const [visible, setVisible] = useState(false);
+  const [countdown, setCountdown] = useState(3);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    // Backend integration here
+
+    const success = await sendResetLink(email);
+    if (!success) return;
+
+    setNotifStage("sent");
+    setVisible(true);
+
     setTimeout(() => {
-      setLoading(false);
-      // Mount then fade in
-      setSentMounted(true);
-      setTimeout(() => setSentVisible(true), 10);
-    }, 1500);
+      setVisible(false);
+      setTimeout(() => {
+        setNotifStage("redirecting");
+        setVisible(true);
+        setCountdown(3);
+        let current = 3;
+        const interval = setInterval(() => {
+          current -= 1;
+          setCountdown(current);
+          if (current <= 0) {
+            clearInterval(interval);
+            navigate("/login");
+          }
+        }, 1000);
+      }, 400);
+    }, 3000);
   };
 
   return (
@@ -38,33 +59,7 @@ const ForgotPasswordView = () => {
 
       <AuthPanel maxWidth="max-w-[460px]">
 
-        {/* Success notification — fades in, never fades out (stays until user navigates) */}
-        {sentMounted && (
-          <div style={{
-            maxHeight: sentVisible ? "90px" : "0px",
-            opacity: sentVisible ? 1 : 0,
-            transform: sentVisible ? "translateY(0)" : "translateY(-8px)",
-            marginBottom: sentVisible ? undefined : "0px",
-            overflow: "hidden",
-            transition: "opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease, margin-bottom 0.4s ease",
-          }}>
-            <div className="mb-4 border border-[rgba(0,255,150,0.4)] px-4 py-3"
-              style={{ background: "rgba(0,180,80,0.08)" }}>
-              <div className="flex items-center gap-3">
-                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 border-[rgba(0,255,150,0.7)] font-mono text-sm text-[#00ff96]"
-                  style={{ boxShadow: "0 0 10px rgba(0,255,150,0.3)" }}>
-                  ✓
-                </div>
-                <div>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#00ff96]">Transmission Sent</p>
-                  <p className="font-mono text-[9px] tracking-[0.1em] text-[rgba(0,255,150,0.5)]">
-                    Reset link dispatched to <span className="text-[#00ff96]">{email}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <AuthNotification stage={notifStage} visible={visible} countdown={countdown} />
 
         {/* Top tick marks */}
         <div className="mb-4 flex items-center justify-center gap-1">
@@ -92,7 +87,7 @@ const ForgotPasswordView = () => {
         <AuthDivider label="HUNTER ID REQUIRED" />
 
         {/* Form — hide after sent */}
-        {!sentMounted && (
+        {notifStage === "idle" && (
           <form onSubmit={onSubmit} className="mt-6 space-y-7">
             <AuthField num="01" label="Hunter ID (Email)">
               <input
