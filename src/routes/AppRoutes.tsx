@@ -6,6 +6,7 @@ import ForgotPasswordView from "../views/auth/ForgotPasswordView";
 import VerifySuccessView from "../views/auth/VerifySuccessView";
 import DashboardView from "../views/auth/DashboardView";
 import ResetPasswordView from "../views/auth/ResetPasswordView";
+import ProtectedRoute from "../components/auth/ProtectedRoute";
 
 const AppRoutes = () => {
   return (
@@ -18,7 +19,14 @@ const AppRoutes = () => {
           <Route path="/forgot-password" element={<ForgotPasswordView />} />
           <Route path="/reset-password" element={<ResetPasswordView />} />
           <Route path="/verify-success" element={<VerifySuccessView />} />
-          <Route path="/dashboard" element={<DashboardView />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardView />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<h1>404 - Page Not Found</h1>} />
         </Routes>
       </PageTransition>

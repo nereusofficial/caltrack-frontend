@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { login } from "../../services/authService";
+import { login as loginService } from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
 import type { LoginRequest } from "../../models/User";
 
 export const useLoginViewModel = () => {
+  const { login } = useAuth();
+
   const [formData, setFormData] = useState<LoginRequest>({
     email: "",
     password: "",
@@ -13,11 +16,7 @@ export const useLoginViewModel = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleLogin = async (): Promise<boolean> => {
@@ -25,12 +24,13 @@ export const useLoginViewModel = () => {
       setLoading(true);
       setError("");
 
-      const res = await login(formData);
-
-      console.log("LOGIN SUCCESS:", res);
+      const res = await loginService(formData);
 
       if (res.token) {
-        localStorage.setItem("token", res.token);
+        login(res.token); // ← sets token + isAuthenticated
+      } else {
+        // No token but success — still mark as authenticated
+        login("authenticated");
       }
 
       return true;
@@ -42,11 +42,5 @@ export const useLoginViewModel = () => {
     }
   };
 
-  return {
-    formData,
-    loading,
-    error,
-    handleChange,
-    handleLogin,
-  };
+  return { formData, loading, error, handleChange, handleLogin };
 };
