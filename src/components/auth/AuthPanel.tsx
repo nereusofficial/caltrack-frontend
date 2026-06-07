@@ -25,7 +25,7 @@ const AuthPanel = ({ children, maxWidth = "max-w-[500px]", compact = false }: Au
     <div className="pointer-events-none absolute inset-x-0 z-20 h-px animate-[scanline_4s_linear_infinite]"
       style={{ background: "linear-gradient(90deg, transparent, rgba(0,200,255,0.08), transparent)" }} />
 
-    <div className={`relative overflow-hidden ${compact ? "px-8 py-6" : "px-10 py-9"}`}
+    <div className={`relative overflow-y-auto ${compact ? "px-5 py-5 sm:px-8 sm:py-6" : "px-5 py-6 sm:px-10 sm:py-9"}`}
       style={{ background: "linear-gradient(180deg, rgba(1,18,38,0.95) 0%, rgba(1,12,28,0.98) 100%)", backdropFilter: "blur(24px)" }}>
       {children}
     </div>
