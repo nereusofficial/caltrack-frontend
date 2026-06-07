@@ -8,48 +8,41 @@ import SystemMessages from "../../components/auth/SystemMessages";
 
 const DashboardView = () => (
   <DashboardLayout>
-    <div className="flex h-full gap-5 overflow-hidden">
+    {/* Mobile/Tablet: vertical stack with scroll */}
+    {/* Desktop: original side-by-side layout */}
+    <div className="flex flex-col gap-4 lg:flex-row lg:h-full lg:gap-5 lg:overflow-hidden">
 
-      {/* LEFT — fills height, no scroll */}
-      <div className="flex flex-1 min-w-0 flex-col gap-3 overflow-hidden">
+      {/* LEFT COLUMN */}
+      <div className="flex flex-col gap-3 lg:flex-1 lg:min-w-0 lg:overflow-hidden">
 
-        {/* Row 1: Status boxes */}
-        <div className="flex gap-3 flex-shrink-0">
+        {/* Status boxes */}
+        <div className="flex flex-col sm:flex-row gap-3">
           <StatusWindow />
         </div>
 
-        {/* Row 2: Nutrition */}
-        <div className="flex-shrink-0">
-          <NutritionPanel />
-        </div>
+        {/* Nutrition */}
+        <NutritionPanel />
 
-        {/* Row 3: System Messages + Quests + Workout — fills remaining height */}
-        <div className="flex flex-1 min-h-0 gap-3">
+        {/* System Messages + Quests + Workout */}
+        <div className="flex flex-col gap-3 lg:flex-row lg:flex-1 lg:min-h-0">
 
-          {/* Left column: SystemMessages grows, QuestList pinned at bottom */}
-          <div className="flex flex-col gap-3 w-[45%] flex-shrink-0 min-h-0">
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <SystemMessages stretch />
-            </div>
-            <div className="flex-shrink-0">
-              <QuestList />
-            </div>
+          {/* Messages + Quests */}
+          <div className="flex flex-col gap-3 lg:w-[45%] lg:flex-shrink-0 lg:min-h-0">
+            <SystemMessages />
+            <QuestList />
           </div>
 
-          {/* Right column: Workout stretches full height */}
-          <div className="flex flex-1 min-w-0 flex-col min-h-0">
+          {/* Workout */}
+          <div className="lg:flex-1 lg:min-w-0">
             <WorkoutPanel />
           </div>
-
         </div>
-
       </div>
 
-      {/* RIGHT — Hunter Card fills full height */}
-      <div className="w-[320px] flex-shrink-0 overflow-hidden">
+      {/* RIGHT COLUMN — Hunter Card */}
+      <div className="lg:w-[320px] lg:flex-shrink-0 lg:overflow-hidden">
         <HunterCard />
       </div>
-
     </div>
   </DashboardLayout>
 );

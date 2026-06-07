@@ -57,20 +57,16 @@ const LoginView = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#010b16] p-8">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#010b16] p-4 sm:p-8">
       <AuthCanvas />
 
-      {/* Ambient glow orbs */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{ background: "radial-gradient(circle, rgba(0,120,255,0.12) 0%, transparent 70%)" }} />
-      <div className="pointer-events-none absolute left-[60%] top-[30%] h-[300px] w-[300px] rounded-full"
-        style={{ background: "radial-gradient(circle, rgba(0,200,255,0.08) 0%, transparent 70%)" }} />
 
       <AuthPanel>
         <AuthNotification stage={notifStage} visible={visible} countdown={countdown} />
         <AuthError error={error} />
 
-        {/* Top tick marks */}
         <div className="mb-4 flex items-center justify-center gap-1">
           <div className="h-[6px] w-px bg-[rgba(0,200,255,0.5)]" />
           <div className="h-[8px] w-px bg-[rgba(0,200,255,0.5)]" />
@@ -81,54 +77,38 @@ const LoginView = () => {
           <div className="h-[6px] w-px bg-[rgba(0,200,255,0.5)]" />
         </div>
 
-        {/* Title */}
         <div className="mb-2 text-center font-mono text-[9px] tracking-[0.35em] text-[rgba(0,180,255,0.35)]">
           SYSTEM ID: CAL-9821-X // DUNGEON MANAGEMENT
         </div>
-        <h1 className="mb-1 text-center text-5xl font-light uppercase tracking-[0.18em] text-[#c8eeff]"
+        <h1 className="mb-1 text-center text-4xl sm:text-5xl font-light uppercase tracking-[0.18em] text-[#c8eeff]"
           style={{ textShadow: "0 0 30px rgba(0,200,255,0.5), 0 0 60px rgba(0,120,255,0.3)" }}>
           Cal<span className="font-semibold text-[#00d4ff]">Track</span>
         </h1>
-        <p className="mb-5 text-center font-mono text-[10px] uppercase tracking-[0.4em] text-[rgba(0,160,220,0.45)]">
+        <p className="mb-5 text-center font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.4em] text-[rgba(0,160,220,0.45)]">
           Authentication Protocol Active
         </p>
 
-        {/* Rank pips */}
         <div className="mb-5 flex justify-center gap-2">
           {[true, true, true, false, false].map((active, i) => (
-            <div key={i} className={`h-1 w-8 ${active ? "bg-[rgba(0,200,255,0.6)]" : "bg-[rgba(0,100,160,0.3)]"}`}
+            <div key={i} className={`h-1 w-6 sm:w-8 ${active ? "bg-[rgba(0,200,255,0.6)]" : "bg-[rgba(0,100,160,0.3)]"}`}
               style={active ? { boxShadow: "0 0 6px rgba(0,200,255,0.5)" } : {}} />
           ))}
         </div>
 
         <AuthDivider label="CREDENTIALS REQUIRED" />
 
-        <form onSubmit={onSubmit} className="mt-5 space-y-7">
+        <form onSubmit={onSubmit} className="mt-5 space-y-6">
           <AuthField num="01" label="Hunter ID">
-            <input
-              type="email"
-              name="email"
-              placeholder="hunter@caltrack.io"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className={inputClass}
-            />
+            <input type="email" name="email" placeholder="hunter@caltrack.io"
+              value={formData.email} onChange={handleChange} required className={inputClass} />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[9px] tracking-[0.15em] text-[rgba(0,180,255,0.25)]">
               EMAIL
             </span>
           </AuthField>
 
           <AuthField num="02" label="Access Key">
-            <input
-              type="password"
-              name="password"
-              placeholder="••••••••••••"
-              value={formData.password}
-              onChange={handlePasswordChange}
-              required
-              className={inputClass}
-            />
+            <input type="password" name="password" placeholder="••••••••••••"
+              value={formData.password} onChange={handlePasswordChange} required className={inputClass} />
             <span ref={passStatusRef} className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[9px] tracking-[0.15em] text-[rgba(0,180,255,0.25)]">
               LOCKED
             </span>
@@ -136,12 +116,9 @@ const LoginView = () => {
 
           <AuthChevrons />
 
-          <button
-            type="submit"
-            disabled={loading || notifStage !== "idle"}
-            className="group relative w-full overflow-hidden border border-[rgba(0,200,255,0.5)] py-4 font-mono text-[0.7rem] uppercase tracking-[0.5em] text-[#7dd8ff] transition-all duration-300 hover:border-[rgba(0,220,255,0.8)] hover:text-[#c8f4ff] disabled:cursor-not-allowed disabled:opacity-40"
-            style={{ background: "linear-gradient(180deg, rgba(0,100,200,0.15), rgba(0,60,140,0.1))" }}
-          >
+          <button type="submit" disabled={loading || notifStage !== "idle"}
+            className="group relative w-full overflow-hidden border border-[rgba(0,200,255,0.5)] py-3 sm:py-4 font-mono text-[0.65rem] sm:text-[0.7rem] uppercase tracking-[0.5em] text-[#7dd8ff] transition-all duration-300 hover:border-[rgba(0,220,255,0.8)] hover:text-[#c8f4ff] disabled:cursor-not-allowed disabled:opacity-40"
+            style={{ background: "linear-gradient(180deg, rgba(0,100,200,0.15), rgba(0,60,140,0.1))" }}>
             <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(0,200,255,0.12),transparent)] transition-transform duration-500 group-hover:translate-x-full" />
             <span className="relative flex items-center justify-center gap-2">
               <span className="text-[rgba(0,200,255,0.4)]">[</span>
@@ -151,13 +128,9 @@ const LoginView = () => {
           </button>
         </form>
 
-        {/* Links */}
         <div className="mt-5 flex justify-between">
           <Link to="/forgot-password"
-            className="flex items-center gap-1 font-mono text-[10px] tracking-[0.15em] text-[rgba(0,140,180,0.5)] transition-all hover:text-[#5ce8ff]"
-            style={{ textShadow: "none" }}
-            onMouseEnter={e => (e.currentTarget.style.textShadow = "0 0 8px rgba(0,200,255,0.4)")}
-            onMouseLeave={e => (e.currentTarget.style.textShadow = "none")}>
+            className="flex items-center gap-1 font-mono text-[10px] tracking-[0.15em] text-[rgba(0,140,180,0.5)] transition-all hover:text-[#5ce8ff]">
             <span>⟨</span><span>Recover Access</span>
           </Link>
           <Link to="/signup"
@@ -166,11 +139,8 @@ const LoginView = () => {
           </Link>
         </div>
 
-        {/* Bottom bar */}
         <div className="mt-6 flex items-center justify-between border-t border-[rgba(0,120,180,0.15)] pt-4">
-          <span className="font-mono text-[9px] tracking-[0.2em] text-[rgba(0,140,200,0.25)]">
-            CAL-SYS // GATE CLASS: A
-          </span>
+          <span className="font-mono text-[9px] tracking-[0.2em] text-[rgba(0,140,200,0.25)]">CAL-SYS // GATE CLASS: A</span>
           <div className="flex gap-1">
             {[true, true, true, false, false].map((active, i) => (
               <div key={i} className={`h-[5px] w-[5px] rounded-full ${active ? "bg-[#00c8ff]" : "bg-[rgba(0,180,255,0.15)]"}`}
