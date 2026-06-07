@@ -21,16 +21,31 @@ export const useSignupViewModel = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({
       ...prev,
       [name]:
-        name === "age" ||
-        name === "height" ||
-        name === "weight"
+        name === "age" || name === "height" || name === "weight"
           ? Number(value)
           : value,
     }));
+  };
+
+  const validate = (): string => {
+    if (!formData.firstName.trim()) return "First name is required.";
+    if (!formData.lastName.trim()) return "Last name is required.";
+    if (!formData.email.trim()) return "Email is required.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      return "Enter a valid email address.";
+    if (formData.password.length < 8)
+      return "Access key must be at least 8 characters.";
+    if (!/[A-Z]/.test(formData.password))
+      return "Access key must contain at least one uppercase letter.";
+    if (!/[0-9]/.test(formData.password))
+      return "Access key must contain at least one number.";
+    if (formData.age <= 0) return "Enter a valid age.";
+    if (formData.height <= 0) return "Enter a valid height.";
+    if (formData.weight <= 0) return "Enter a valid weight.";
+    return "";
   };
 
   const handleSignup = async (): Promise<boolean> => {
@@ -38,11 +53,14 @@ export const useSignupViewModel = () => {
       setLoading(true);
       setError("");
 
+      const validationError = validate();
+      if (validationError) {
+        setError(validationError);
+        return false;
+      }
+
       const res = await signup(formData);
 
-      console.log("SIGNUP SUCCESS:", res);
-
-      // Optional: store token if backend returns one
       if (res.token) {
         localStorage.setItem("token", res.token);
       }
@@ -56,11 +74,5 @@ export const useSignupViewModel = () => {
     }
   };
 
-  return {
-    formData,
-    loading,
-    error,
-    handleChange,
-    handleSignup,
-  };
+  return { formData, loading, error, handleChange, handleSignup };
 };

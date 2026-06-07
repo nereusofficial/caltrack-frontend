@@ -19,17 +19,32 @@ export const useLoginViewModel = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const validate = (): string => {
+    if (!formData.email.trim()) return "Email is required.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      return "Enter a valid email address.";
+    if (!formData.password) return "Access key is required.";
+    if (formData.password.length < 8)
+      return "Access key must be at least 8 characters.";
+    return "";
+  };
+
   const handleLogin = async (): Promise<boolean> => {
     try {
       setLoading(true);
       setError("");
 
+      const validationError = validate();
+      if (validationError) {
+        setError(validationError);
+        return false;
+      }
+
       const res = await loginService(formData);
 
       if (res.token) {
-        login(res.token); // ← sets token + isAuthenticated
+        login(res.token);
       } else {
-        // No token but success — still mark as authenticated
         login("authenticated");
       }
 
