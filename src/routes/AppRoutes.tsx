@@ -7,6 +7,7 @@ import VerifySuccessView from "../views/auth/VerifySuccessView";
 import DashboardView from "../views/auth/DashboardView";
 import ResetPasswordView from "../views/auth/ResetPasswordView";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
+import GuestRoute from "../components/auth/GuestRoute";
 
 const AppRoutes = () => {
   return (
@@ -14,19 +15,19 @@ const AppRoutes = () => {
       <PageTransition>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<LoginView />} />
-          <Route path="/signup" element={<SignupView />} />
-          <Route path="/forgot-password" element={<ForgotPasswordView />} />
-          <Route path="/reset-password" element={<ResetPasswordView />} />
+
+          {/* Guest only — redirect to dashboard if logged in */}
+          <Route path="/login" element={<GuestRoute><LoginView /></GuestRoute>} />
+          <Route path="/signup" element={<GuestRoute><SignupView /></GuestRoute>} />
+          <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordView /></GuestRoute>} />
+          <Route path="/reset-password" element={<GuestRoute><ResetPasswordView /></GuestRoute>} />
+
+          {/* Public */}
           <Route path="/verify-success" element={<VerifySuccessView />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardView />
-              </ProtectedRoute>
-            }
-          />
+
+          {/* Protected — redirect to login if not logged in */}
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardView /></ProtectedRoute>} />
+
           <Route path="*" element={<h1>404 - Page Not Found</h1>} />
         </Routes>
       </PageTransition>
