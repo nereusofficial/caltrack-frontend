@@ -12,7 +12,6 @@ import AuthStyles, { inputClass } from "../../components/auth/AuthStyles";
 import AuthError from "../../components/auth/AuthError";
 
 const SignupView = () => {
-  const { formData, loading, error, handleChange, handleSignup, handleGoogleSignup } = useSignupViewModel();
   const navigate = useNavigate();
 
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -22,18 +21,7 @@ const SignupView = () => {
   const [visible, setVisible] = useState(false);
   const [countdown, setCountdown] = useState(3);
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (formData.password !== confirmPassword) {
-      setConfirmError("Access keys do not match.");
-      return;
-    }
-    setConfirmError("");
-
-    const success = await handleSignup();
-    if (!success) return;
-
+  const triggerSuccessFlow = () => {
     setNotifStage("sent");
     setVisible(true);
 
@@ -54,6 +42,24 @@ const SignupView = () => {
         }, 1000);
       }, 400);
     }, 3000);
+  };
+
+  const { formData, loading, error, handleChange, handleSignup, handleGoogleSignup } =
+    useSignupViewModel(triggerSuccessFlow);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (formData.password !== confirmPassword) {
+      setConfirmError("Access keys do not match.");
+      return;
+    }
+    setConfirmError("");
+
+    const success = await handleSignup();
+    if (!success) return;
+
+    triggerSuccessFlow();
   };
 
   const handleFacebookSignup = async () => {};
