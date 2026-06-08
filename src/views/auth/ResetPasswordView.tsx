@@ -18,7 +18,6 @@ const ResetPasswordView = () => {
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [matchError, setMatchError] = useState("");
 
   const [done, setDone] = useState(false);
   const [successVisible, setSuccessVisible] = useState(false);
@@ -63,7 +62,6 @@ useEffect(() => {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMatchError("");
 
     const success = await changePassword(token, password, confirm);
     if (!success) return;
@@ -148,8 +146,7 @@ useEffect(() => {
           </div>
         </div>
 
-        <AuthError error={matchError || error} />
-
+        <AuthError error={error} />
         {/* Top tick marks */}
         <div className="mb-4 flex items-center justify-center gap-1">
           <div className="h-[6px] w-px bg-[rgba(0,200,255,0.5)]" />
