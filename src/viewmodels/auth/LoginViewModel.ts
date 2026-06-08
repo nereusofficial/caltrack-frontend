@@ -59,21 +59,20 @@ export const useLoginViewModel = () => {
 
   // returns a function — call it directly: handleGoogleLogin()
   const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        setLoading(true);
-        setError("");
-        const res = await googleAuth(tokenResponse.access_token);
-        login(res.token ?? "authenticated");
-        // view will detect isAuthenticated and navigate
-      } catch (err: any) {
-        triggerError(err.response?.data?.message || "Google login failed.");
-      } finally {
-        setLoading(false);
-      }
-    },
-    onError: () => triggerError("Google sign-in was cancelled or failed."),
-  });
+  onSuccess: async (tokenResponse) => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await googleAuth(tokenResponse.access_token, "login");
+      login(res.token ?? "authenticated");
+    } catch (err: any) {
+      triggerError(err.response?.data?.message || "Google login failed.");
+    } finally {
+      setLoading(false);
+    }
+  },
+  onError: () => triggerError("Google sign-in was cancelled or failed."),
+});
 
   return { formData, loading, error, handleChange, handleLogin, handleGoogleLogin };
 };

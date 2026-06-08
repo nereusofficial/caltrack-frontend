@@ -67,10 +67,10 @@ export const resetPassword = async (
   return response.data;
 };
 
-export const googleAuth = async (accessToken: string): Promise<AuthResponse> => {
+export const googleAuth = async (accessToken: string, mode: "login" | "signup"): Promise<AuthResponse> => {
   const response = await axios.post<AuthResponse>(
     `${API_URL}/auth/google`,
-    { accessToken }
+    { accessToken, mode }
   );
   return response.data;
 };

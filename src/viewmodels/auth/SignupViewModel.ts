@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { signup, googleAuth } from "../../services/authService";
-import { useAuth } from "../../context/AuthContext";
 import type { SignupRequest } from "../../models/User";
 
 export const useSignupViewModel = () => {
-  const { login } = useAuth();
 
   const [formData, setFormData] = useState<SignupRequest>({
     firstName: "",
@@ -68,8 +66,7 @@ export const useSignupViewModel = () => {
         return false;
       }
 
-      const res = await signup(formData);
-      if (res.token) login(res.token);
+      await signup(formData);
       return true;
     } catch (err: any) {
       triggerError(err.response?.data?.message || "Signup failed.");
@@ -81,20 +78,20 @@ export const useSignupViewModel = () => {
 
   // Google signup — same endpoint as login since backend handles new vs existing
   const handleGoogleSignup = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        setLoading(true);
-        setError("");
-        const res = await googleAuth(tokenResponse.access_token);
-        login(res.token ?? "authenticated");
-      } catch (err: any) {
-        triggerError(err.response?.data?.message || "Google signup failed.");
-      } finally {
-        setLoading(false);
-      }
-    },
-    onError: () => triggerError("Google sign-up was cancelled or failed."),
-  });
+  onSuccess: async (tokenResponse) => {
+    try {
+      setLoading(true);
+      setError("");
+      await googleAuth(tokenResponse.access_token, "signup");
+      // Don't call login() — just let SignupView handle the redirect to /login
+    } catch (err: any) {
+      triggerError(err.response?.data?.message || "Google signup failed.");
+    } finally {
+      setLoading(false);
+    }
+  },
+  onError: () => triggerError("Google sign-up was cancelled or failed."),
+});
 
   return { formData, loading, error, handleChange, handleSignup, handleGoogleSignup };
 };
