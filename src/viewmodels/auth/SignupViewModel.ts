@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { signup } from "../../services/authService";
+import { useGoogleLogin } from "@react-oauth/google";
+import { signup, googleAuth } from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
 import type { SignupRequest } from "../../models/User";
 
 export const useSignupViewModel = () => {
+  const { login } = useAuth();
+
   const [formData, setFormData] = useState<SignupRequest>({
     firstName: "",
     lastName: "",
@@ -65,11 +69,7 @@ export const useSignupViewModel = () => {
       }
 
       const res = await signup(formData);
-
-      if (res.token) {
-        localStorage.setItem("token", res.token);
-      }
-
+      if (res.token) login(res.token);
       return true;
     } catch (err: any) {
       triggerError(err.response?.data?.message || "Signup failed.");
@@ -79,5 +79,22 @@ export const useSignupViewModel = () => {
     }
   };
 
-  return { formData, loading, error, handleChange, handleSignup };
+  // Google signup — same endpoint as login since backend handles new vs existing
+  const handleGoogleSignup = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setLoading(true);
+        setError("");
+        const res = await googleAuth(tokenResponse.access_token);
+        login(res.token ?? "authenticated");
+      } catch (err: any) {
+        triggerError(err.response?.data?.message || "Google signup failed.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => triggerError("Google sign-up was cancelled or failed."),
+  });
+
+  return { formData, loading, error, handleChange, handleSignup, handleGoogleSignup };
 };

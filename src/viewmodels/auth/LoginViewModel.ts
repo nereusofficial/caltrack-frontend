@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { login as loginService } from "../../services/authService";
+import { useGoogleLogin } from "@react-oauth/google";
+import { login as loginService, googleAuth } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
 import type { LoginRequest } from "../../models/User";
 
@@ -46,13 +47,7 @@ export const useLoginViewModel = () => {
       }
 
       const res = await loginService(formData);
-
-      if (res.token) {
-        login(res.token);
-      } else {
-        login("authenticated");
-      }
-
+      login(res.token ?? "authenticated");
       return true;
     } catch (err: any) {
       triggerError(err.response?.data?.message || "Login failed.");
@@ -62,5 +57,23 @@ export const useLoginViewModel = () => {
     }
   };
 
-  return { formData, loading, error, handleChange, handleLogin };
+  // returns a function — call it directly: handleGoogleLogin()
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setLoading(true);
+        setError("");
+        const res = await googleAuth(tokenResponse.access_token);
+        login(res.token ?? "authenticated");
+        // view will detect isAuthenticated and navigate
+      } catch (err: any) {
+        triggerError(err.response?.data?.message || "Google login failed.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => triggerError("Google sign-in was cancelled or failed."),
+  });
+
+  return { formData, loading, error, handleChange, handleLogin, handleGoogleLogin };
 };
