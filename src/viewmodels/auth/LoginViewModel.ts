@@ -29,6 +29,11 @@ export const useLoginViewModel = () => {
     return "";
   };
 
+  const triggerError = (msg: string) => {
+    setError("");
+    setTimeout(() => setError(msg), 10);
+  };
+
   const handleLogin = async (): Promise<boolean> => {
     try {
       setLoading(true);
@@ -36,7 +41,7 @@ export const useLoginViewModel = () => {
 
       const validationError = validate();
       if (validationError) {
-        setError(validationError);
+        triggerError(validationError);
         return false;
       }
 
@@ -50,7 +55,7 @@ export const useLoginViewModel = () => {
 
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || "Login failed.");
+      triggerError(err.response?.data?.message || "Login failed.");
       return false;
     } finally {
       setLoading(false);

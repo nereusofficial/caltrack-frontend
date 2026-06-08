@@ -7,22 +7,30 @@ interface AuthErrorProps {
 const AuthError = ({ error }: AuthErrorProps) => {
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [trigger, setTrigger] = useState(0);
 
   useEffect(() => {
     if (error) {
-      setMounted(true);
-      // Small delay so the mount triggers the CSS transition
-      const fadeIn = setTimeout(() => setVisible(true), 10);
-      const fadeOut = setTimeout(() => setVisible(false), 3000);
-      // Unmount after fade-out transition completes (400ms)
-      const unmount = setTimeout(() => setMounted(false), 3400);
-      return () => {
-        clearTimeout(fadeIn);
-        clearTimeout(fadeOut);
-        clearTimeout(unmount);
-      };
+      setTrigger((t) => t + 1);
     }
   }, [error]);
+
+  useEffect(() => {
+    if (!trigger) return;
+
+    setMounted(true);
+    setVisible(false);
+
+    const fadeIn = setTimeout(() => setVisible(true), 10);
+    const fadeOut = setTimeout(() => setVisible(false), 3000);
+    const unmount = setTimeout(() => setMounted(false), 3400);
+
+    return () => {
+      clearTimeout(fadeIn);
+      clearTimeout(fadeOut);
+      clearTimeout(unmount);
+    };
+  }, [trigger]);
 
   if (!mounted) return null;
 

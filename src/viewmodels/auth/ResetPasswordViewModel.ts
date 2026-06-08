@@ -14,6 +14,11 @@ export const useResetPasswordViewModel = () => {
     return "";
   };
 
+  const triggerError = (msg: string) => {
+    setError("");
+    setTimeout(() => setError(msg), 10);
+  };
+
   const changePassword = async (
     token: string,
     password: string,
@@ -25,15 +30,14 @@ export const useResetPasswordViewModel = () => {
 
       const validationError = validate(password, confirm);
       if (validationError) {
-        setError(validationError);
+        triggerError(validationError);
         return false;
       }
 
       await resetPassword(token, password);
-
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || "Password reset failed.");
+      triggerError(err.response?.data?.message || "Password reset failed.");
       return false;
     } finally {
       setLoading(false);
