@@ -5,32 +5,40 @@ export const useResetPasswordViewModel = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const validate = (password: string, confirm: string): string => {
+    if (!password) return "Access key is required.";
+    if (password.length < 8) return "Access key must be at least 8 characters.";
+    if (!/[A-Z]/.test(password)) return "Access key must contain at least one uppercase letter.";
+    if (!/[0-9]/.test(password)) return "Access key must contain at least one number.";
+    if (password !== confirm) return "Access keys do not match. Re-enter.";
+    return "";
+  };
+
   const changePassword = async (
     token: string,
-    password: string
+    password: string,
+    confirm: string
   ): Promise<boolean> => {
     try {
       setLoading(true);
       setError("");
 
+      const validationError = validate(password, confirm);
+      if (validationError) {
+        setError(validationError);
+        return false;
+      }
+
       await resetPassword(token, password);
 
       return true;
     } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-        "Password reset failed."
-      );
-
+      setError(err.response?.data?.message || "Password reset failed.");
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  return {
-    loading,
-    error,
-    changePassword,
-  };
+  return { loading, error, changePassword };
 };

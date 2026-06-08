@@ -65,12 +65,7 @@ useEffect(() => {
     e.preventDefault();
     setMatchError("");
 
-    if (password !== confirm) {
-      setMatchError("Access keys do not match. Re-enter.");
-      return;
-    }
-
-    const success = await changePassword(token, password);
+    const success = await changePassword(token, password, confirm);
     if (!success) return;
 
     setDone(true);
