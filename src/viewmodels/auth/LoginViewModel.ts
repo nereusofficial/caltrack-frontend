@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { login as loginService, googleAuth } from "../../services/authService";
-import { useAuth } from "../../context/AuthContext";
 import type { LoginRequest } from "../../models/User";
 
-export const useLoginViewModel = (onGoogleSuccess?: () => void) => {
-  const { login } = useAuth();
-
+export const useLoginViewModel = (onGoogleSuccess?: (token: string) => void) => {
   const [formData, setFormData] = useState<LoginRequest>({
     email: "",
     password: "",
@@ -35,7 +32,7 @@ export const useLoginViewModel = (onGoogleSuccess?: () => void) => {
     setTimeout(() => setError(msg), 10);
   };
 
-  const handleLogin = async (): Promise<boolean> => {
+  const handleLogin = async (): Promise<string | false> => {
     try {
       setLoading(true);
       setError("");
@@ -47,8 +44,7 @@ export const useLoginViewModel = (onGoogleSuccess?: () => void) => {
       }
 
       const res = await loginService(formData);
-      login(res.token ?? "authenticated");
-      return true;
+      return res.token ?? "authenticated";
     } catch (err: any) {
       triggerError(err.response?.data?.message || "Login failed.");
       return false;
@@ -63,10 +59,7 @@ export const useLoginViewModel = (onGoogleSuccess?: () => void) => {
         setLoading(true);
         setError("");
         const res = await googleAuth(tokenResponse.access_token, "login");
-        onGoogleSuccess?.();                    // show notification first
-        setTimeout(() => {
-          login(res.token ?? "authenticated");  // login after notification starts
-        }, 2400);                               // matches the 2000ms auth stage + 400ms fade
+        onGoogleSuccess?.(res.token ?? "authenticated");
       } catch (err: any) {
         triggerError(err.response?.data?.message || "Google login failed.");
       } finally {

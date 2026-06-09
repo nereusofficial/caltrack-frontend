@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useLoginViewModel } from "../../viewmodels/auth/LoginViewModel";
+import { useAuth } from "../../context/AuthContext";
 
 import AuthCanvas from "../../components/auth/AuthCanvas";
 import AuthPanel from "../../components/auth/AuthPanel";
@@ -12,6 +13,7 @@ import AuthStyles, { inputClass } from "../../components/auth/AuthStyles";
 import AuthError from "../../components/auth/AuthError";
 
 const LoginView = () => {
+  const { login, setIsRedirecting } = useAuth();
   const navigate = useNavigate();
   const passStatusRef = useRef<HTMLSpanElement>(null);
 
@@ -19,7 +21,8 @@ const LoginView = () => {
   const [visible, setVisible] = useState(false);
   const [countdown, setCountdown] = useState(3);
 
-  const triggerSuccessFlow = () => {
+  const triggerSuccessFlow = (token?: string) => {
+    setIsRedirecting(true);
     setNotifStage("auth");
     setVisible(true);
 
@@ -34,6 +37,8 @@ const LoginView = () => {
           current--;
           if (current <= 0) {
             clearInterval(interval);
+            if (token) login(token);
+            setIsRedirecting(false);
             navigate("/dashboard");
           } else {
             setCountdown(current);
@@ -44,13 +49,13 @@ const LoginView = () => {
   };
 
   const { formData, loading, error, handleChange, handleLogin, handleGoogleLogin } =
-    useLoginViewModel(triggerSuccessFlow);
+    useLoginViewModel((token) => triggerSuccessFlow(token));
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await handleLogin();
-    if (!success) return;
-    triggerSuccessFlow();
+    const token = await handleLogin();
+    if (!token) return;
+    triggerSuccessFlow(token);
   };
 
   const handleFacebookLogin = async () => {};
