@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
-import { signup, googleAuth } from "../../services/authService";
+import { signup, googleAuth, facebookAuth } from "../../services/authService";
 import type { SignupRequest } from "../../models/User";
 
-export const useSignupViewModel = (onGoogleSuccess?: () => void) => {
+export const useSignupViewModel = (onGoogleSuccess?: () => void, onFacebookSuccess?: () => void) => {
   const [formData, setFormData] = useState<SignupRequest>({
     email: "",
     password: "",
@@ -72,5 +72,18 @@ export const useSignupViewModel = (onGoogleSuccess?: () => void) => {
     onError: () => triggerError("Google sign-up was cancelled or failed."),
   });
 
-  return { formData, loading, error, handleChange, handleSignup, handleGoogleSignup };
+  const handleFacebookSignup = async (accessToken: string) => {
+    try {
+      setLoading(true);
+      setError("");
+      await facebookAuth(accessToken, "signup");
+      onFacebookSuccess?.();
+    } catch (err: any) {
+      triggerError(err.response?.data?.message || "Facebook signup failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { formData, loading, error, handleChange, handleSignup, handleGoogleSignup, handleFacebookSignup };
 };

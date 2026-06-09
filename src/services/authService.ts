@@ -74,3 +74,11 @@ export const googleAuth = async (accessToken: string, mode: "login" | "signup"):
   );
   return response.data;
 };
+
+export const facebookAuth = async (accessToken: string, mode: "login" | "signup"): Promise<AuthResponse> => {
+  const response = await axios.post<AuthResponse>(
+    `${API_URL}/auth/facebook`,
+    { accessToken, mode }
+  );
+  return response.data;
+};
