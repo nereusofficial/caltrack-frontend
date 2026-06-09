@@ -17,14 +17,8 @@ export interface LoginRequest {
 }
 
 export interface SignupRequest {
-  firstName: string;
-  lastName: string;
   email: string;
   password: string;
-  age: number;
-  gender: "Male" | "Female" | "Other";
-  height: number;
-  weight: number;
 }
 
 export interface AuthResponse {
