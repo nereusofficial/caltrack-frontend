@@ -63,8 +63,10 @@ export const useLoginViewModel = (onGoogleSuccess?: () => void) => {
         setLoading(true);
         setError("");
         const res = await googleAuth(tokenResponse.access_token, "login");
-        login(res.token ?? "authenticated");
-        onGoogleSuccess?.(); // trigger notification in the view
+        onGoogleSuccess?.();                    // show notification first
+        setTimeout(() => {
+          login(res.token ?? "authenticated");  // login after notification starts
+        }, 2400);                               // matches the 2000ms auth stage + 400ms fade
       } catch (err: any) {
         triggerError(err.response?.data?.message || "Google login failed.");
       } finally {
