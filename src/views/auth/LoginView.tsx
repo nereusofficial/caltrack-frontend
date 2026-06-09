@@ -77,7 +77,7 @@ const LoginView = () => {
         style={{ background: "radial-gradient(circle, rgba(0,120,255,0.12) 0%, transparent 70%)" }} />
 
       <AuthPanel>
-        <AuthNotification stage={notifStage} visible={visible} countdown={countdown} />
+        <AuthNotification stage={notifStage} visible={visible} countdown={countdown} redirectTarget="dashboard" />
         <AuthError error={error} />
 
         <div className="mb-4 flex items-center justify-center gap-1">

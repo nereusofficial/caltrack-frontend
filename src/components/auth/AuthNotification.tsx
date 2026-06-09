@@ -6,9 +6,10 @@ interface AuthNotificationProps {
   stage: NotifStage;
   visible: boolean;
   countdown: number;
+  redirectTarget?: "dashboard" | "login";
 }
 
-const AuthNotification = ({ stage, visible, countdown }: AuthNotificationProps) => {
+const AuthNotification = ({ stage, visible, countdown, redirectTarget = "login" }: AuthNotificationProps) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -77,10 +78,10 @@ const AuthNotification = ({ stage, visible, countdown }: AuthNotificationProps) 
             </div>
             <div className="flex-1">
               <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#5ce8ff]">
-                Redirecting to Gate
+                {redirectTarget === "dashboard" ? "Redirecting to Dashboard" : "Redirecting to Gate"}
               </p>
               <p className="font-mono text-[9px] text-[rgba(0,180,255,0.5)]">
-                Returning to login in{" "}
+                {redirectTarget === "dashboard" ? "Entering system in " : "Returning to login in "}
                 <span className="text-[#00c8ff]" style={{ textShadow: "0 0 8px rgba(0,200,255,0.6)" }}>
                   {countdown}s
                 </span>
