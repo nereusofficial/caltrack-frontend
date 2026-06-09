@@ -12,19 +12,14 @@ import AuthStyles, { inputClass } from "../../components/auth/AuthStyles";
 import AuthError from "../../components/auth/AuthError";
 
 const LoginView = () => {
-  const { formData, loading, error, handleChange, handleLogin, handleGoogleLogin } = useLoginViewModel();
-  const passStatusRef = useRef<HTMLSpanElement>(null);
   const navigate = useNavigate();
+  const passStatusRef = useRef<HTMLSpanElement>(null);
 
   const [notifStage, setNotifStage] = useState<"idle" | "auth" | "redirecting">("idle");
   const [visible, setVisible] = useState(false);
   const [countdown, setCountdown] = useState(3);
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const success = await handleLogin();
-    if (!success) return;
-
+  const triggerSuccessFlow = () => {
     setNotifStage("auth");
     setVisible(true);
 
@@ -48,13 +43,18 @@ const LoginView = () => {
     }, 2000);
   };
 
- 
-  const handleFacebookLogin = async () => {
-    // await loginWithFacebook();
+  const { formData, loading, error, handleChange, handleLogin, handleGoogleLogin } =
+    useLoginViewModel(triggerSuccessFlow);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await handleLogin();
+    if (!success) return;
+    triggerSuccessFlow();
   };
-  const handleAppleLogin = async () => {
-    // await loginWithApple();
-  };
+
+  const handleFacebookLogin = async () => {};
+  const handleAppleLogin = async () => {};
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleChange(e);
@@ -103,17 +103,10 @@ const LoginView = () => {
           ))}
         </div>
 
-        {/* Social Login Buttons */}
         <div className="mb-4 grid grid-cols-3 gap-2">
-          {/* Google */}
-          <button
-            type="button"
-            onClick={() => handleGoogleLogin()}
-            disabled={loading || notifStage !== "idle"}
-            title="Continue with Google"
+          <button type="button" onClick={() => handleGoogleLogin()} disabled={loading || notifStage !== "idle"} title="Continue with Google"
             className="group relative overflow-hidden border border-[rgba(0,200,255,0.25)] py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[rgba(0,200,255,0.6)] transition-all duration-300 hover:border-[rgba(0,220,255,0.5)] hover:text-[#c8f4ff] disabled:cursor-not-allowed disabled:opacity-40"
-            style={{ background: "linear-gradient(180deg, rgba(0,60,120,0.15), rgba(0,30,80,0.1))" }}
-          >
+            style={{ background: "linear-gradient(180deg, rgba(0,60,120,0.15), rgba(0,30,80,0.1))" }}>
             <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(0,200,255,0.07),transparent)] transition-transform duration-500 group-hover:translate-x-full" />
             <span className="relative flex flex-col items-center justify-center gap-1.5">
               <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -126,15 +119,9 @@ const LoginView = () => {
             </span>
           </button>
 
-          {/* Facebook */}
-          <button
-            type="button"
-            onClick={handleFacebookLogin}
-            disabled={loading || notifStage !== "idle"}
-            title="Continue with Facebook"
+          <button type="button" onClick={handleFacebookLogin} disabled={loading || notifStage !== "idle"} title="Continue with Facebook"
             className="group relative overflow-hidden border border-[rgba(0,200,255,0.25)] py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[rgba(0,200,255,0.6)] transition-all duration-300 hover:border-[rgba(0,220,255,0.5)] hover:text-[#c8f4ff] disabled:cursor-not-allowed disabled:opacity-40"
-            style={{ background: "linear-gradient(180deg, rgba(0,60,120,0.15), rgba(0,30,80,0.1))" }}
-          >
+            style={{ background: "linear-gradient(180deg, rgba(0,60,120,0.15), rgba(0,30,80,0.1))" }}>
             <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(0,200,255,0.07),transparent)] transition-transform duration-500 group-hover:translate-x-full" />
             <span className="relative flex flex-col items-center justify-center gap-1.5">
               <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -144,15 +131,9 @@ const LoginView = () => {
             </span>
           </button>
 
-          {/* Apple */}
-          <button
-            type="button"
-            onClick={handleAppleLogin}
-            disabled={loading || notifStage !== "idle"}
-            title="Continue with Apple"
+          <button type="button" onClick={handleAppleLogin} disabled={loading || notifStage !== "idle"} title="Continue with Apple"
             className="group relative overflow-hidden border border-[rgba(0,200,255,0.25)] py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[rgba(0,200,255,0.6)] transition-all duration-300 hover:border-[rgba(0,220,255,0.5)] hover:text-[#c8f4ff] disabled:cursor-not-allowed disabled:opacity-40"
-            style={{ background: "linear-gradient(180deg, rgba(0,60,120,0.15), rgba(0,30,80,0.1))" }}
-          >
+            style={{ background: "linear-gradient(180deg, rgba(0,60,120,0.15), rgba(0,30,80,0.1))" }}>
             <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(0,200,255,0.07),transparent)] transition-transform duration-500 group-hover:translate-x-full" />
             <span className="relative flex flex-col items-center justify-center gap-1.5">
               <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -163,7 +144,6 @@ const LoginView = () => {
           </button>
         </div>
 
-        {/* Divider */}
         <div className="mb-4 flex items-center gap-3">
           <div className="flex-1 border-t border-[rgba(0,120,180,0.2)]" />
           <span className="font-mono text-[8px] tracking-[0.3em] text-[rgba(0,140,200,0.35)]">OR</span>

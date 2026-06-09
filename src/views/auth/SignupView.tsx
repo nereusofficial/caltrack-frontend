@@ -17,12 +17,13 @@ const SignupView = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [confirmError, setConfirmError] = useState("");
 
-  const [notifStage, setNotifStage] = useState<"idle" | "sent" | "redirecting">("idle");
+  const [notifStage, setNotifStage] = useState<"idle" | "sent" | "registered" | "redirecting">("idle");
+
   const [visible, setVisible] = useState(false);
   const [countdown, setCountdown] = useState(3);
 
-  const triggerSuccessFlow = () => {
-    setNotifStage("sent");
+  const triggerSuccessFlow = (initialStage: "sent" | "registered" = "sent") => {
+    setNotifStage(initialStage);
     setVisible(true);
 
     setTimeout(() => {
@@ -45,21 +46,18 @@ const SignupView = () => {
   };
 
   const { formData, loading, error, handleChange, handleSignup, handleGoogleSignup } =
-    useSignupViewModel(triggerSuccessFlow);
+    useSignupViewModel(() => triggerSuccessFlow("registered")); // Google uses "registered"
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (formData.password !== confirmPassword) {
       setConfirmError("Access keys do not match.");
       return;
     }
     setConfirmError("");
-
     const success = await handleSignup();
     if (!success) return;
-
-    triggerSuccessFlow();
+    triggerSuccessFlow(); // email signup uses "sent"
   };
 
   const handleFacebookSignup = async () => {};

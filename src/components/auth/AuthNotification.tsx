@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-type NotifStage = "idle" | "auth" | "sent" | "redirecting" | "closing";
+type NotifStage = "idle" | "auth" | "sent" | "registered" | "redirecting" | "closing";
 
 interface AuthNotificationProps {
   stage: NotifStage;
@@ -22,7 +22,7 @@ const AuthNotification = ({ stage, visible, countdown }: AuthNotificationProps) 
 
   if (!mounted) return null;
 
-  const isSuccess = stage === "auth" || stage === "sent";
+  const isSuccess = stage === "auth" || stage === "sent" || stage === "registered";
 
   return (
     <div
@@ -43,7 +43,6 @@ const AuthNotification = ({ stage, visible, countdown }: AuthNotificationProps) 
         }}
       >
         {isSuccess ? (
-          /* ── Green: auth / sent ── */
           <div className="flex items-center gap-3">
             <div
               className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 border-[rgba(0,255,150,0.7)] font-mono text-sm text-[#00ff96]"
@@ -53,15 +52,22 @@ const AuthNotification = ({ stage, visible, countdown }: AuthNotificationProps) 
             </div>
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#00ff96]">
-                {stage === "auth" ? "Authentication Successful" : "Verification Email Sent"}
+                {stage === "auth"
+                  ? "Authentication Successful"
+                  : stage === "registered"
+                  ? "Hunter Registered"
+                  : "Verification Email Sent"}
               </p>
               <p className="font-mono text-[9px] text-[rgba(0,255,150,0.5)]">
-                {stage === "auth" ? "Identity verified — access granted" : "Check your inbox and click the verification link."}
+                {stage === "auth"
+                  ? "Identity verified — access granted"
+                  : stage === "registered"
+                  ? "Account created successfully — redirecting to login"
+                  : "Check your inbox and click the verification link."}
               </p>
             </div>
           </div>
         ) : stage === "redirecting" ? (
-          /* ── Blue: redirecting ── */
           <div className="flex items-center gap-3">
             <div
               className="flex h-7 w-7 flex-shrink-0 animate-pulse items-center justify-center rounded-full border-2 border-[rgba(0,180,255,0.7)] font-mono text-sm text-[#00c8ff]"
@@ -96,7 +102,6 @@ const AuthNotification = ({ stage, visible, countdown }: AuthNotificationProps) 
             </svg>
           </div>
         ) : (
-          /* ── Blue: closing ── */
           <div className="flex items-center gap-3">
             <div
               className="flex h-7 w-7 flex-shrink-0 animate-pulse items-center justify-center rounded-full border-2 border-[rgba(0,180,255,0.7)] font-mono text-sm text-[#00c8ff]"

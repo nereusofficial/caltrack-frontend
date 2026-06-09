@@ -4,7 +4,7 @@ import { login as loginService, googleAuth } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
 import type { LoginRequest } from "../../models/User";
 
-export const useLoginViewModel = () => {
+export const useLoginViewModel = (onGoogleSuccess?: () => void) => {
   const { login } = useAuth();
 
   const [formData, setFormData] = useState<LoginRequest>({
@@ -57,22 +57,22 @@ export const useLoginViewModel = () => {
     }
   };
 
-  // returns a function — call it directly: handleGoogleLogin()
   const handleGoogleLogin = useGoogleLogin({
-  onSuccess: async (tokenResponse) => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await googleAuth(tokenResponse.access_token, "login");
-      login(res.token ?? "authenticated");
-    } catch (err: any) {
-      triggerError(err.response?.data?.message || "Google login failed.");
-    } finally {
-      setLoading(false);
-    }
-  },
-  onError: () => triggerError("Google sign-in was cancelled or failed."),
-});
+    onSuccess: async (tokenResponse) => {
+      try {
+        setLoading(true);
+        setError("");
+        const res = await googleAuth(tokenResponse.access_token, "login");
+        login(res.token ?? "authenticated");
+        onGoogleSuccess?.(); // trigger notification in the view
+      } catch (err: any) {
+        triggerError(err.response?.data?.message || "Google login failed.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => triggerError("Google sign-in was cancelled or failed."),
+  });
 
   return { formData, loading, error, handleChange, handleLogin, handleGoogleLogin };
 };
