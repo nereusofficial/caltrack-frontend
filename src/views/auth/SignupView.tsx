@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSignupViewModel } from "../../viewmodels/auth/SignupViewModel";
-import FacebookLogin from "@greatsumini/react-facebook-login";
 
 import AuthCanvas from "../../components/auth/AuthCanvas";
 import AuthPanel from "../../components/auth/AuthPanel";
@@ -65,6 +64,14 @@ const SignupView = () => {
 
   const handleAppleSignup = async () => {};
 
+  const onFacebookClick = () => {
+    window.FB.login((response: any) => {
+      if (response.authResponse) {
+        handleFacebookSignup(response.authResponse.accessToken);
+      }
+    }, { scope: "email" });
+  };
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#010b16] p-4 sm:p-8">
       <AuthCanvas />
@@ -122,24 +129,17 @@ const SignupView = () => {
           </button>
 
           {/* Facebook */}
-          <FacebookLogin
-            appId={import.meta.env.VITE_FACEBOOK_APP_ID}
-            onSuccess={(response) => handleFacebookSignup(response.accessToken)}
-            onFail={() => {}}
-            render={({ onClick }) => (
-              <button type="button" onClick={onClick} disabled={loading || notifStage !== "idle"} title="Continue with Facebook"
-                className="group relative overflow-hidden border border-[rgba(0,200,255,0.25)] py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[rgba(0,200,255,0.6)] transition-all duration-300 hover:border-[rgba(0,220,255,0.5)] hover:text-[#c8f4ff] disabled:cursor-not-allowed disabled:opacity-40"
-                style={{ background: "linear-gradient(180deg, rgba(0,60,120,0.15), rgba(0,30,80,0.1))" }}>
-                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(0,200,255,0.07),transparent)] transition-transform duration-500 group-hover:translate-x-full" />
-                <span className="relative flex flex-col items-center justify-center gap-1.5">
-                  <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" fill="#1877F2" />
-                  </svg>
-                  <span className="hidden sm:block">Facebook</span>
-                </span>
-              </button>
-            )}
-          />
+          <button type="button" onClick={onFacebookClick} disabled={loading || notifStage !== "idle"} title="Continue with Facebook"
+            className="group relative overflow-hidden border border-[rgba(0,200,255,0.25)] py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[rgba(0,200,255,0.6)] transition-all duration-300 hover:border-[rgba(0,220,255,0.5)] hover:text-[#c8f4ff] disabled:cursor-not-allowed disabled:opacity-40"
+            style={{ background: "linear-gradient(180deg, rgba(0,60,120,0.15), rgba(0,30,80,0.1))" }}>
+            <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(0,200,255,0.07),transparent)] transition-transform duration-500 group-hover:translate-x-full" />
+            <span className="relative flex flex-col items-center justify-center gap-1.5">
+              <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" fill="#1877F2" />
+              </svg>
+              <span className="hidden sm:block">Facebook</span>
+            </span>
+          </button>
 
           {/* Apple */}
           <button type="button" onClick={handleAppleSignup} disabled={loading || notifStage !== "idle"} title="Continue with Apple"
