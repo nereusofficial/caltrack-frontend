@@ -62,7 +62,7 @@ const AuthNotification = ({ stage, visible, countdown }: AuthNotificationProps) 
                 {stage === "auth"
                   ? "Identity verified — access granted"
                   : stage === "registered"
-                  ? "Account created successfully — redirecting to login"
+                  ? "Account created successfully"
                   : "Check your inbox and click the verification link."}
               </p>
             </div>
