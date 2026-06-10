@@ -74,7 +74,7 @@ export const useLoginViewModel = (onGoogleSuccess?: (token: string) => void, onF
       setLoading(true);
       setError("");
       const res = await facebookAuth(accessToken, "login");
-      onFacebookSuccess?.(res.token ?? "authenticated");
+      onFacebookSuccess?.(res.token ?? "authenticated"); // just pass token up, don't call login()
     } catch (err: any) {
       triggerError(err.response?.data?.message || "Facebook login failed.");
     } finally {
