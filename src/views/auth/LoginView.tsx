@@ -12,6 +12,10 @@ import AuthChevrons from "../../components/auth/AuthChevrons";
 import AuthStyles, { inputClass } from "../../components/auth/AuthStyles";
 import AuthError from "../../components/auth/AuthError";
 
+declare global {
+  interface Window { FB: any; }
+}
+
 const LoginView = () => {
   const { login, setIsRedirecting } = useAuth();
   const navigate = useNavigate();
@@ -68,6 +72,12 @@ const LoginView = () => {
       console.error("Facebook SDK not loaded");
       return;
     }
+    window.FB.init({
+      appId: import.meta.env.VITE_FACEBOOK_APP_ID,
+      cookie: true,
+      xfbml: true,
+      version: "v19.0",
+    });
     window.FB.login((response: any) => {
       if (response.authResponse) {
         handleFacebookLogin(response.authResponse.accessToken);

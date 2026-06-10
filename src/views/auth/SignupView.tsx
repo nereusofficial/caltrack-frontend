@@ -1,7 +1,6 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useLoginViewModel } from "../../viewmodels/auth/LoginViewModel";
-import { useAuth } from "../../context/AuthContext";
+import { useSignupViewModel } from "../../viewmodels/auth/SignupViewModel";
 
 import AuthCanvas from "../../components/auth/AuthCanvas";
 import AuthPanel from "../../components/auth/AuthPanel";
@@ -12,18 +11,22 @@ import AuthChevrons from "../../components/auth/AuthChevrons";
 import AuthStyles, { inputClass } from "../../components/auth/AuthStyles";
 import AuthError from "../../components/auth/AuthError";
 
-const LoginView = () => {
-  const { login, setIsRedirecting } = useAuth();
-  const navigate = useNavigate();
-  const passStatusRef = useRef<HTMLSpanElement>(null);
+declare global {
+  interface Window { FB: any; }
+}
 
-  const [notifStage, setNotifStage] = useState<"idle" | "auth" | "redirecting">("idle");
+const SignupView = () => {
+  const navigate = useNavigate();
+
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmError, setConfirmError] = useState("");
+
+  const [notifStage, setNotifStage] = useState<"idle" | "sent" | "registered" | "redirecting">("idle");
   const [visible, setVisible] = useState(false);
   const [countdown, setCountdown] = useState(3);
 
-  const triggerSuccessFlow = (token?: string) => {
-    setIsRedirecting(true);
-    setNotifStage("auth");
+  const triggerSuccessFlow = (initialStage: "sent" | "registered" = "sent") => {
+    setNotifStage(initialStage);
     setVisible(true);
 
     setTimeout(() => {
@@ -34,53 +37,53 @@ const LoginView = () => {
         setCountdown(3);
         let current = 3;
         const interval = setInterval(() => {
-          current--;
+          current -= 1;
+          setCountdown(current);
           if (current <= 0) {
             clearInterval(interval);
-            if (token) login(token);
-            setIsRedirecting(false);
-            navigate("/dashboard");
-          } else {
-            setCountdown(current);
+            navigate("/login");
           }
         }, 1000);
       }, 400);
-    }, 2000);
+    }, 3000);
   };
 
-  const { formData, loading, error, handleChange, handleLogin, handleGoogleLogin, handleFacebookLogin } =
-    useLoginViewModel(
-      (token) => triggerSuccessFlow(token),
-      (token) => triggerSuccessFlow(token)
+  const { formData, loading, error, handleChange, handleSignup, handleGoogleSignup, handleFacebookSignup } =
+    useSignupViewModel(
+      () => triggerSuccessFlow("registered"),
+      () => triggerSuccessFlow("registered")
     );
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = await handleLogin();
-    if (!token) return;
-    triggerSuccessFlow(token);
+    if (formData.password !== confirmPassword) {
+      setConfirmError("Access keys do not match.");
+      return;
+    }
+    setConfirmError("");
+    const success = await handleSignup();
+    if (!success) return;
+    triggerSuccessFlow();
   };
 
-  const handleAppleLogin = async () => {};
+  const handleAppleSignup = async () => {};
 
   const onFacebookClick = () => {
     if (!window.FB) {
       console.error("Facebook SDK not loaded");
       return;
     }
+    window.FB.init({
+      appId: import.meta.env.VITE_FACEBOOK_APP_ID,
+      cookie: true,
+      xfbml: true,
+      version: "v19.0",
+    });
     window.FB.login((response: any) => {
       if (response.authResponse) {
-        handleFacebookLogin(response.authResponse.accessToken);
+        handleFacebookSignup(response.authResponse.accessToken);
       }
     }, { scope: "email" });
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleChange(e);
-    if (passStatusRef.current) {
-      passStatusRef.current.textContent = e.target.value.length > 0 ? "ENCRYPTED" : "LOCKED";
-      passStatusRef.current.style.color = e.target.value.length > 0 ? "rgba(0,220,255,0.5)" : "rgba(0,180,255,0.25)";
-    }
   };
 
   return (
@@ -91,7 +94,7 @@ const LoginView = () => {
         style={{ background: "radial-gradient(circle, rgba(0,120,255,0.12) 0%, transparent 70%)" }} />
 
       <AuthPanel>
-        <AuthNotification stage={notifStage} visible={visible} countdown={countdown} redirectTarget="dashboard" />
+        <AuthNotification stage={notifStage} visible={visible} countdown={countdown} />
         <AuthError error={error} />
 
         <div className="mb-4 flex items-center justify-center gap-1">
@@ -105,14 +108,14 @@ const LoginView = () => {
         </div>
 
         <div className="mb-2 text-center font-mono text-[9px] tracking-[0.35em] text-[rgba(0,180,255,0.35)]">
-          SYSTEM ID: CAL-9821-X // DUNGEON MANAGEMENT
+          SYSTEM ID: CAL-9821-X // HUNTER ENROLLMENT
         </div>
         <h1 className="mb-1 text-center text-4xl sm:text-5xl font-light uppercase tracking-[0.18em] text-[#c8eeff]"
           style={{ textShadow: "0 0 30px rgba(0,200,255,0.5), 0 0 60px rgba(0,120,255,0.3)" }}>
           Cal<span className="font-semibold text-[#00d4ff]">Track</span>
         </h1>
         <p className="mb-5 text-center font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.4em] text-[rgba(0,160,220,0.45)]">
-          Authentication Protocol Active
+          Hunter Registration Protocol
         </p>
 
         <div className="mb-5 flex justify-center gap-2">
@@ -124,7 +127,7 @@ const LoginView = () => {
 
         <div className="mb-4 grid grid-cols-3 gap-2">
           {/* Google */}
-          <button type="button" onClick={() => handleGoogleLogin()} disabled={loading || notifStage !== "idle"} title="Continue with Google"
+          <button type="button" onClick={() => handleGoogleSignup()} disabled={loading || notifStage !== "idle"} title="Continue with Google"
             className="group relative overflow-hidden border border-[rgba(0,200,255,0.25)] py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[rgba(0,200,255,0.6)] transition-all duration-300 hover:border-[rgba(0,220,255,0.5)] hover:text-[#c8f4ff] disabled:cursor-not-allowed disabled:opacity-40"
             style={{ background: "linear-gradient(180deg, rgba(0,60,120,0.15), rgba(0,30,80,0.1))" }}>
             <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(0,200,255,0.07),transparent)] transition-transform duration-500 group-hover:translate-x-full" />
@@ -153,7 +156,7 @@ const LoginView = () => {
           </button>
 
           {/* Apple */}
-          <button type="button" onClick={handleAppleLogin} disabled={loading || notifStage !== "idle"} title="Continue with Apple"
+          <button type="button" onClick={handleAppleSignup} disabled={loading || notifStage !== "idle"} title="Continue with Apple"
             className="group relative overflow-hidden border border-[rgba(0,200,255,0.25)] py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[rgba(0,200,255,0.6)] transition-all duration-300 hover:border-[rgba(0,220,255,0.5)] hover:text-[#c8f4ff] disabled:cursor-not-allowed disabled:opacity-40"
             style={{ background: "linear-gradient(180deg, rgba(0,60,120,0.15), rgba(0,30,80,0.1))" }}>
             <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(0,200,255,0.07),transparent)] transition-transform duration-500 group-hover:translate-x-full" />
@@ -175,7 +178,7 @@ const LoginView = () => {
         <AuthDivider label="CREDENTIALS REQUIRED" />
 
         <form onSubmit={onSubmit} className="mt-5 space-y-6">
-          <AuthField num="01" label="Hunter ID">
+          <AuthField num="01" label="Hunter Identification">
             <input type="email" name="email" placeholder="hunter@caltrack.io"
               value={formData.email} onChange={handleChange} required className={inputClass} />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[9px] tracking-[0.15em] text-[rgba(0,180,255,0.25)]">
@@ -185,11 +188,25 @@ const LoginView = () => {
 
           <AuthField num="02" label="Access Key">
             <input type="password" name="password" placeholder="••••••••••••"
-              value={formData.password} onChange={handlePasswordChange} required className={inputClass} />
-            <span ref={passStatusRef} className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[9px] tracking-[0.15em] text-[rgba(0,180,255,0.25)]">
-              LOCKED
+              value={formData.password} onChange={handleChange} required className={inputClass} />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[9px] tracking-[0.15em] text-[rgba(0,180,255,0.25)]">
+              PASSWORD
             </span>
           </AuthField>
+
+          <div className="space-y-1">
+            <AuthField num="03" label="Confirm Access Key">
+              <input type="password" placeholder="••••••••••••" value={confirmPassword}
+                onChange={(e) => { setConfirmPassword(e.target.value); setConfirmError(""); }}
+                required className={inputClass} />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[9px] tracking-[0.15em] text-[rgba(0,180,255,0.25)]">
+                CONFIRM
+              </span>
+            </AuthField>
+            {confirmError && (
+              <p className="pl-1 font-mono text-[9px] tracking-[0.15em] text-red-400">{confirmError}</p>
+            )}
+          </div>
 
           <AuthChevrons />
 
@@ -199,25 +216,21 @@ const LoginView = () => {
             <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(0,200,255,0.12),transparent)] transition-transform duration-500 group-hover:translate-x-full" />
             <span className="relative flex items-center justify-center gap-2">
               <span className="text-[rgba(0,200,255,0.4)]">[</span>
-              {loading ? "Authenticating..." : "Enter System"}
+              {loading ? "Registering Hunter..." : "Awaken & Register"}
               <span className="text-[rgba(0,200,255,0.4)]">]</span>
             </span>
           </button>
         </form>
 
-        <div className="mt-5 flex justify-between">
-          <Link to="/forgot-password"
-            className="flex items-center gap-1 font-mono text-[10px] tracking-[0.15em] text-[rgba(0,140,180,0.5)] transition-all hover:text-[#5ce8ff]">
-            <span>⟨</span><span>Recover Access</span>
-          </Link>
-          <Link to="/signup"
-            className="flex items-center gap-1 font-mono text-[10px] tracking-[0.15em] text-[rgba(0,180,220,0.7)] transition-all hover:text-[#00d4ff]">
-            <span>Register Hunter</span><span>⟩</span>
+        <div className="mt-5 flex items-center gap-2">
+          <span className="font-mono text-[9px] tracking-[0.1em] text-[rgba(0,140,180,0.4)]">Already a Hunter?</span>
+          <Link to="/login" className="font-mono text-[9px] tracking-[0.15em] text-[rgba(0,180,220,0.7)] transition-all hover:text-[#00d4ff]">
+            ⟨ Return to Gate ⟩
           </Link>
         </div>
 
         <div className="mt-6 flex items-center justify-between border-t border-[rgba(0,120,180,0.15)] pt-4">
-          <span className="font-mono text-[9px] tracking-[0.2em] text-[rgba(0,140,200,0.25)]">CAL-SYS // GATE CLASS: A</span>
+          <span className="font-mono text-[8px] tracking-[0.2em] text-[rgba(0,140,200,0.25)]">GATE CLASS: E → S</span>
           <div className="flex gap-1">
             {[true, true, true, false, false].map((active, i) => (
               <div key={i} className={`h-[5px] w-[5px] rounded-full ${active ? "bg-[#00c8ff]" : "bg-[rgba(0,180,255,0.15)]"}`}
@@ -232,4 +245,4 @@ const LoginView = () => {
   );
 };
 
-export default LoginView;
+export default SignupView;
